@@ -120,7 +120,7 @@ select option{background:#fff;color:#4a3728;}
   <div id="fSec">
     <div class="mode-tabs">
       <div class="mtab active" onclick="setMode('single',this)">🌸 個人排盤</div>
-      <div class="mtab" onclick="setMode('couple',this)">💕 夫妻合盤</div>
+      <div class="mtab" onclick="setMode('couple',this)">💕 伴侶合盤</div>
     </div>
     <div class="mode-sec active" id="m-single">
       <div class="card card-pink">
@@ -131,7 +131,7 @@ select option{background:#fff;color:#4a3728;}
         </div>
         <div class="g2">
           <div><label>日期</label><select id="d1"><option value="">日期</option></select></div>
-          <div><label>時辰</label><select id="h1"><option value="">時辰</option><option value="0">子時 23–01</option><option value="1">丑時 01–03</option><option value="2">寅時 03–05</option><option value="3">卯時 05–07</option><option value="4">辰時 07–09</option><option value="5">巳時 09–11</option><option value="6">午時 11–13</option><option value="7">未時 13–15</option><option value="8">申時 15–17</option><option value="9">酉時 17–19</option><option value="10">戌時 19–21</option><option value="11">亥時 21–23</option></select></div>
+          <div><label>時辰</label><select id="h1"><option value="">時辰</option><option value="unknown">不詳（預設午時）</option><option value="0">子時 23:00–01:00</option><option value="1">丑時 01:00–03:00</option><option value="2">寅時 03:00–05:00</option><option value="3">卯時 05:00–07:00</option><option value="4">辰時 07:00–09:00</option><option value="5">巳時 09:00–11:00</option><option value="6">午時 11:00–13:00</option><option value="7">未時 13:00–15:00</option><option value="8">申時 15:00–17:00</option><option value="9">酉時 17:00–19:00</option><option value="10">戌時 19:00–21:00</option><option value="11">亥時 21:00–23:00</option></select></div>
         </div>
       </div>
       <div class="card card-teal">
@@ -148,7 +148,7 @@ select option{background:#fff;color:#4a3728;}
         </div>
         <div class="g2">
           <div><label>日期</label><select id="d2a"><option value="">日</option></select></div>
-          <div><label>時辰</label><select id="h2a"><option value="">時辰</option><option value="0">子時</option><option value="1">丑時</option><option value="2">寅時</option><option value="3">卯時</option><option value="4">辰時</option><option value="5">巳時</option><option value="6">午時</option><option value="7">未時</option><option value="8">申時</option><option value="9">酉時</option><option value="10">戌時</option><option value="11">亥時</option></select></div>
+          <div><label>時辰</label><select id="h2a"><option value="">時辰</option><option value="unknown">不詳（預設午時）</option><option value="0">子時 23:00–01:00</option><option value="1">丑時 01:00–03:00</option><option value="2">寅時 03:00–05:00</option><option value="3">卯時 05:00–07:00</option><option value="4">辰時 07:00–09:00</option><option value="5">巳時 09:00–11:00</option><option value="6">午時 11:00–13:00</option><option value="7">未時 13:00–15:00</option><option value="8">申時 15:00–17:00</option><option value="9">酉時 17:00–19:00</option><option value="10">戌時 19:00–21:00</option><option value="11">亥時 21:00–23:00</option></select></div>
         </div>
       </div>
       <div class="card card-teal">
@@ -159,7 +159,7 @@ select option{background:#fff;color:#4a3728;}
         </div>
         <div class="g2">
           <div><label>日期</label><select id="d2b"><option value="">日</option></select></div>
-          <div><label>時辰</label><select id="h2b"><option value="">時辰</option><option value="0">子時</option><option value="1">丑時</option><option value="2">寅時</option><option value="3">卯時</option><option value="4">辰時</option><option value="5">巳時</option><option value="6">午時</option><option value="7">未時</option><option value="8">申時</option><option value="9">酉時</option><option value="10">戌時</option><option value="11">亥時</option></select></div>
+          <div><label>時辰</label><select id="h2b"><option value="">時辰</option><option value="unknown">不詳（預設午時）</option><option value="0">子時 23:00–01:00</option><option value="1">丑時 01:00–03:00</option><option value="2">寅時 03:00–05:00</option><option value="3">卯時 05:00–07:00</option><option value="4">辰時 07:00–09:00</option><option value="5">巳時 09:00–11:00</option><option value="6">午時 11:00–13:00</option><option value="7">未時 13:00–15:00</option><option value="8">申時 15:00–17:00</option><option value="9">酉時 17:00–19:00</option><option value="10">戌時 19:00–21:00</option><option value="11">亥時 21:00–23:00</option></select></div>
         </div>
       </div>
       <div class="card card-purple">
@@ -318,7 +318,8 @@ function getBazi(yId,mId,dId,hId){
   const y=parseInt(document.getElementById(yId)?.value);
   const m=parseInt(document.getElementById(mId)?.value);
   const d=parseInt(document.getElementById(dId)?.value);
-  const h=parseInt(document.getElementById(hId)?.value);
+  const rawH=document.getElementById(hId)?.value;
+  const h=rawH==='unknown'?6:parseInt(rawH);
   if(!y||!m||!d||isNaN(h))return null;
   const yearP=getYearGZ(y),monthP=getMonthGZ(y,m),dayP=getDayGZ(y,m,d),hourP=getHourGZ(dayP.tg,h);
   return{pillars:[yearP,monthP,dayP,hourP],m};
@@ -354,9 +355,16 @@ function generate(){
     html+=`<div style="font-size:.7rem;color:#9b7e6a;margin:.3rem 0 .4rem;">喜用神（補這些五行）</div><div class="xy-row">${ana.xishen.map(wx=>`<span class="xy-chip xy-like">${WX_EMO[wx]} ${wx}</span>`).join('')}</div>`;
     html+=`<div style="font-size:.7rem;color:#9b7e6a;margin:.4rem 0 .3rem;">忌神（請避開這些）</div><div class="xy-row">${ana.jishen.map(wx=>`<span class="xy-chip xy-hate">${WX_EMO[wx]} ${wx}</span>`).join('')}</div></div>`;
     html+=`<div class="div"></div><div class="slabel">💫 進階水晶配法</div>`;
-    const tabsHtml=keys.map((key,i)=>`<div class="ftab${i===0?' active':''}" onclick="switchTab(this,'fp${i}')">${findMethod(key)?.name||'配法'}</div>`).join('')+`<div class="ftab" onclick="switchTab(this,'fp-base')">🌱 日常基礎</div>`;
+    // 找第一個符合喜用神的 tab，優先顯示
+    const firstGoodIdx=keys.findIndex(key=>{const m=findMethod(key);return m&&ana.xishen.includes(m.wx);});
+    const defaultIdx=firstGoodIdx>=0?firstGoodIdx:0;
+    const tabsHtml=keys.map((key,i)=>{
+      const m=findMethod(key);
+      const good=m&&ana.xishen.includes(m.wx);
+      return`<div class="ftab${i===defaultIdx?' active':''}" onclick="switchTab(this,'fp${i}')">${good?'✅ ':''}${m?.name||'配法'}</div>`;
+    }).join('')+`<div class="ftab" onclick="switchTab(this,'fp-base')">🌱 日常基礎</div>`;
     html+=`<div class="formula-tabs">${tabsHtml}</div>`;
-    keys.forEach((key,i)=>{html+=renderMethodPanel(key,ana,i,i===0);});
+    keys.forEach((key,i)=>{html+=renderMethodPanel(key,ana,i,i===defaultIdx);});
     html+=`<div class="formula-panel" id="fp-base"><div class="ok-box">✅ 最安全·適合每天佩戴的基礎配方</div><div class="crow">`;
     ana.xishen.forEach(wx=>{(CRYSTALS[wx]||[]).slice(0,2).forEach(c=>{html+=renderCrystalChip(c.name,c.dot,c.note);});});
     html+=`</div><div class="fblock" style="border-left-color:#E8A898;font-size:.75rem">❌ 請避開忌神水晶：`;
@@ -376,7 +384,7 @@ function generate(){
     const interRel=RELATION[anaA.dayWX][anaB.dayWX];
     const relDesc={比劫:'同類互助，頻率接近',食傷:'您滋養對方，給予較多',財星:'您主導對方，帶給他穩定',官殺:'對方主導您，帶給您約束',印星:'對方滋養您，被他照顧'};
 
-    document.getElementById('rName').textContent=`${pCfg.emoji} ${pCfg.label}・夫妻合盤`;
+    document.getElementById('rName').textContent=`${pCfg.emoji} ${pCfg.label}・伴侶合盤`;
     document.getElementById('rSub').textContent=`本人${anaA.dayWX}行${anaA.isStrong?'身強':'身弱'} × 伴侶${anaB.dayWX}行${anaB.isStrong?'身強':'身弱'}`;
     rCrystals.innerHTML=sharedXi.slice(0,3).map((wx,i)=>crystalSVG(WX_CRYSTAL_COLOR[wx],[24,20,26][i],[40,50,38][i])).join('');
 
