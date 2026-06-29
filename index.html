@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>八字水晶配方</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans TC',sans-serif;background:#FAF6F0;min-height:100vh;color:#4a3728;}
@@ -388,27 +389,53 @@ select option{background:#fff;color:#4a3728;}
 </div>
 
 <script>
-const TG=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
-const DZ=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+// ===== 使用 lunar-javascript 精確計算八字 =====
 const TG_WX={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
 const DZ_WX={子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水'};
-const MONTH_DZ=['','寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
-const MONTH_TG_BASE={甲:2,乙:4,丙:6,丁:8,戊:0,己:2,庚:4,辛:6,壬:8,癸:0};
-const MONTH_SEASON={1:'木',2:'木',3:'木',4:'火',5:'火',6:'火',7:'金',8:'金',9:'金',10:'水',11:'水',12:'水'};
 const WX_COLOR={木:'#4a9a4a',火:'#cc4422',土:'#bb8800',金:'#888800',水:'#3366cc'};
 const WX_EMO={木:'🌿',火:'🔥',土:'🪨',金:'⚡',水:'💧'};
 const WX_CRYSTAL_COLOR={木:'#7EC8C8',火:'#E89AAE',土:'#F0B87A',金:'#e8e0b8',水:'#a0b8e0'};
 const RELATION={木:{木:'比劫',火:'食傷',土:'財星',金:'官殺',水:'印星'},火:{火:'比劫',土:'食傷',金:'財星',水:'官殺',木:'印星'},土:{土:'比劫',金:'食傷',水:'財星',木:'官殺',火:'印星'},金:{金:'比劫',水:'食傷',木:'財星',火:'官殺',土:'印星'},水:{水:'比劫',木:'食傷',火:'財星',土:'官殺',金:'印星'}};
 
-function isLeap(y){return(y%4===0&&y%100!==0)||(y%400===0);}
-function getYearGZ(y){const ti=(y-4)%10,di=(y-4)%12;const tg=TG[(ti+10)%10],dz=DZ[(di+12)%12];return{tg,dz,wx_tg:TG_WX[tg],wx_dz:DZ_WX[dz]};}
-function getMonthGZ(y,m){const yp=getYearGZ(y);const base=MONTH_TG_BASE[yp.tg];const tg=TG[(base+m-1)%10];const dz=MONTH_DZ[m];return{tg,dz,wx_tg:TG_WX[tg],wx_dz:DZ_WX[dz]};}
-function getDayGZ(y,m,d){let total=0;for(let i=1900;i<y;i++)total+=(isLeap(i)?366:365);const days=[0,31,isLeap(y)?29:28,31,30,31,30,31,31,30,31,30,31];for(let i=1;i<m;i++)total+=days[i];total+=d;const tg=TG[(total+6)%10],dz=DZ[(total+6)%12];return{tg,dz,wx_tg:TG_WX[tg],wx_dz:DZ_WX[dz]};}
-function getHourGZ(dayTg,hIdx){const dayIdx=TG.indexOf(dayTg);const base=[0,2,4,6,8,0,2,4,6,8][dayIdx];const tg=TG[(base+hIdx)%10],dz=DZ[hIdx];return{tg,dz,wx_tg:TG_WX[tg],wx_dz:DZ_WX[dz]};}
+// 時辰對應 index → 小時數（取起始時）
+const HOUR_IDX_TO_H = [23,1,3,5,7,9,11,13,15,17,19,21];
+
+function getBaziFromLunar(y, m, d, hIdx){
+  // hIdx: 0=子,1=丑...11=亥; unknown=6(午)
+  const h = HOUR_IDX_TO_H[hIdx];
+  // 子時 23:00 算次日
+  const actualH = hIdx === 0 ? 23 : h;
+  try {
+    const solar = Solar.fromYmdHms(y, m, d, actualH, 0, 0);
+    const lunar = solar.getLunar();
+    const bazi = lunar.getEightChar();
+    const yearGZ = bazi.getYear();
+    const monthGZ = bazi.getMonth();
+    const dayGZ = bazi.getDay();
+    const hourGZ = bazi.getTime();
+    function parseGZ(gz){
+      const tg = gz[0], dz = gz[1];
+      return {tg, dz, wx_tg: TG_WX[tg]||'土', wx_dz: DZ_WX[dz]||'土'};
+    }
+    return {
+      pillars: [parseGZ(yearGZ), parseGZ(monthGZ), parseGZ(dayGZ), parseGZ(hourGZ)],
+      m: m,
+      ok: true
+    };
+  } catch(e) {
+    console.error('lunar-js error:', e);
+    return null;
+  }
+}
+
+// 月令五行：依月柱地支判斷（更精確）
+const DZ_SEASON={寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水',子:'水',丑:'土'};
 
 function analyzeChart(pillars,month){
   const dayWX=pillars[2].wx_tg;
-  const seasonWX=MONTH_SEASON[month];
+  // 用月柱地支判斷月令，比月份數字更精確
+  const monthDZ=pillars[1].dz;
+  const seasonWX=DZ_SEASON[monthDZ]||'土';
   const wxCount={木:0,火:0,土:0,金:0,水:0};
   pillars.forEach(p=>{wxCount[p.wx_tg]++;wxCount[p.wx_dz]++;});
   const helpWX={木:['木','水'],火:['火','木'],土:['土','火'],金:['金','土'],水:['水','金']};
@@ -520,10 +547,11 @@ function getBazi(yId,mId,dId,hId){
   const m=parseInt(document.getElementById(mId)?.value);
   const d=parseInt(document.getElementById(dId)?.value);
   const rawH=document.getElementById(hId)?.value;
-  const h=rawH==='unknown'?6:parseInt(rawH);
-  if(!y||!m||!d||isNaN(h))return null;
-  const yearP=getYearGZ(y),monthP=getMonthGZ(y,m),dayP=getDayGZ(y,m,d),hourP=getHourGZ(dayP.tg,h);
-  return{pillars:[yearP,monthP,dayP,hourP],m};
+  const hIdx=rawH==='unknown'?6:parseInt(rawH);
+  if(!y||!m||!d||isNaN(hIdx))return null;
+  const result=getBaziFromLunar(y,m,d,hIdx);
+  if(!result){alert('八字計算發生錯誤，請確認出生日期是否正確');return null;}
+  return result;
 }
 
 function renderBasicResult(bazi, ana, titlePrefix){
