@@ -117,6 +117,32 @@ select option{background:#fff;color:#4a3728;}
 .div{height:1px;background:repeating-linear-gradient(90deg,#e8d8cc 0,#e8d8cc 6px,transparent 6px,transparent 12px);margin:.7rem 0;}
 .rbtn{width:100%;padding:.5rem;background:transparent;border:1.5px dashed #e0cfc4;border-radius:10px;color:#b09080;font-size:.78rem;font-family:'Noto Sans TC',sans-serif;cursor:pointer;margin-top:.6rem;transition:all .2s;}
 .rbtn:hover{border-color:#C4A8D4;color:#9b7e6a;}
+/* 訂購按鈕 */
+.order-btn{width:100%;padding:.9rem;background:linear-gradient(135deg,#F0B87A,#E89AAE);border:none;border-radius:14px;color:#fff;font-size:1rem;font-family:'Noto Serif TC',serif;font-weight:600;cursor:pointer;letter-spacing:.1em;transition:all .25s;box-shadow:0 4px 16px rgba(240,184,122,.4);margin:.5rem 0;}
+.order-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(240,184,122,.5);}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(74,55,40,.45);z-index:100;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:1.5rem;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;position:relative;}
+.modal-title{font-family:'Noto Serif TC',serif;font-size:1.1rem;color:#4a3728;margin-bottom:.25rem;text-align:center;}
+.modal-sub{font-size:.75rem;color:#9b7e6a;text-align:center;margin-bottom:1rem;line-height:1.6;}
+.wrist-guide{background:#fdf8ff;border:1.5px solid #e0d0ec;border-radius:12px;padding:.85rem;margin-bottom:.85rem;}
+.wrist-guide-title{font-size:.78rem;color:#8a6a9a;font-weight:500;margin-bottom:.55rem;}
+.wrist-steps li{font-size:.75rem;color:#6a5040;padding:.2rem 0;line-height:1.6;list-style:none;padding-left:.2rem;}
+.wrist-steps li span.step-num{display:inline-flex;width:18px;height:18px;background:#E89AAE;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:600;margin-right:.4rem;}
+.wrist-size-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.55rem 0;}
+.wsz{background:#FAF6F0;border:1.5px solid #e0cfc4;border-radius:10px;padding:.5rem;text-align:center;cursor:pointer;transition:all .2s;}
+.wsz:hover{border-color:#E89AAE;background:#fdf0f4;}
+.wsz.active{background:linear-gradient(135deg,#f5eef8,#fdf0f4);border-color:#E89AAE;}
+.wsz-num{font-family:'Noto Serif TC',serif;font-size:.95rem;color:#4a3728;}
+.wsz-label{font-size:.6rem;color:#b09080;margin-top:.1rem;}
+.custom-row{display:flex;align-items:center;gap:.5rem;margin:.4rem 0;}
+.custom-row label{font-size:.75rem;color:#9b7e6a;white-space:nowrap;}
+.custom-row input{flex:1;padding:.45rem .7rem;font-size:.82rem;}
+.order-summary{background:#FAF6F0;border:1.5px solid #e8d8cc;border-radius:10px;padding:.75rem;margin:.6rem 0;font-size:.78rem;color:#6a5040;line-height:1.9;}
+.copy-go-btn{width:100%;padding:.82rem;background:linear-gradient(135deg,#C4A8D4,#E89AAE);border:none;border-radius:12px;color:#fff;font-size:.92rem;font-family:'Noto Serif TC',serif;font-weight:600;cursor:pointer;letter-spacing:.1em;margin-top:.5rem;transition:all .25s;box-shadow:0 4px 14px rgba(196,168,212,.4);}
+.copy-go-btn:hover{transform:translateY(-2px);}
+.copied-hint{text-align:center;font-size:.75rem;color:#508050;margin-top:.4rem;display:none;}
+.modal-close{position:absolute;top:.75rem;right:.85rem;background:none;border:none;font-size:1.3rem;color:#b09080;cursor:pointer;line-height:1;}
 
 /* Result hidden initially */
 .result-sec{display:none;}
@@ -321,8 +347,43 @@ select option{background:#fff;color:#4a3728;}
       <div id="advResult"></div>
     </div>
 
+    <button class="order-btn" onclick="openOrder()">💎 我想訂購這套水晶手鍊</button>
     <button class="rbtn" onclick="doReset()">← 重新查詢</button>
   </div>
+
+<!-- 訂購 Modal -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeOrder()">✕</button>
+    <div class="modal-title">💎 訂購水晶手鍊</div>
+    <div class="modal-sub" id="modalCrystalInfo"></div>
+
+    <div class="wrist-guide">
+      <div class="wrist-guide-title">📏 如何量手圍？</div>
+      <ul class="wrist-steps">
+        <li><span class="step-num">1</span>準備一條細繩或紙條</li>
+        <li><span class="step-num">2</span>繞手腕一圈，標記重疊處</li>
+        <li><span class="step-num">3</span>用尺量出長度（公分），即為手圍</li>
+      </ul>
+      <div style="margin-top:.5rem;font-size:.72rem;color:#9b7e6a;">💡 手鍊通常比手圍多加 1.5–2 cm，讓您舒適配戴</div>
+    </div>
+
+    <div style="font-size:.75rem;color:#7a5a48;margin-bottom:.4rem;">選擇手圍尺寸（cm）</div>
+    <div class="wrist-size-grid" id="wristSizeGrid"></div>
+
+    <div class="custom-row">
+      <label>自訂尺寸：</label>
+      <input type="number" id="customSize" placeholder="輸入公分數" min="12" max="25" step="0.5">
+      <span style="font-size:.78rem;color:#9b7e6a;">cm</span>
+    </div>
+
+    <div class="order-summary" id="orderSummary"></div>
+
+    <button class="copy-go-btn" onclick="copyAndGoIG()">📋 複製訂單資訊並前往 IG 私訊</button>
+    <div class="copied-hint" id="copiedHint">✅ 已複製！正在前往 Instagram…</div>
+    <div style="font-size:.72rem;color:#9b7e6a;text-align:center;margin-top:.5rem;line-height:1.6;">開啟 IG 後，請至 <strong>@musan_crystal</strong> 的頁面傳送私訊，並將剛才複製的內容貼上 💕</div>
+  </div>
+</div>
 </div>
 </div>
 
@@ -692,6 +753,136 @@ function doReset(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+
+// ===== 訂購功能 =====
+let orderCrystalText = '';
+let selectedWristSize = '';
+
+const WRIST_SIZES = [14, 15, 15.5, 16, 16.5, 17, 17.5, 18];
+
+function initWristGrid(){
+  const g = document.getElementById('wristSizeGrid');
+  if(!g) return;
+  WRIST_SIZES.forEach(sz => {
+    const d = document.createElement('div');
+    d.className = 'wsz';
+    d.innerHTML = `<div class="wsz-num">${sz}</div><div class="wsz-label">cm</div>`;
+    d.onclick = () => {
+      document.querySelectorAll('.wsz').forEach(x=>x.classList.remove('active'));
+      d.classList.add('active');
+      selectedWristSize = sz + ' cm';
+      document.getElementById('customSize').value = '';
+      updateOrderSummary();
+    };
+    g.appendChild(d);
+  });
+  document.getElementById('customSize').addEventListener('input', function(){
+    if(this.value){
+      document.querySelectorAll('.wsz').forEach(x=>x.classList.remove('active'));
+      selectedWristSize = this.value + ' cm';
+      updateOrderSummary();
+    }
+  });
+}
+
+function openOrder(){
+  // 收集推薦水晶
+  const chips = document.querySelectorAll('#overallGrid .cchip');
+  let crystals = [];
+  chips.forEach(c => {
+    const name = c.textContent.trim().split(' ')[0];
+    if(name) crystals.push(name);
+  });
+  // 也加上進階配法水晶
+  const advChips = document.querySelectorAll('#advResult .cchip');
+  advChips.forEach(c => {
+    const name = c.textContent.trim().split(' ')[0];
+    if(name && !crystals.includes(name)) crystals.push(name);
+  });
+
+  const nameEl = document.getElementById('rName');
+  const subEl = document.getElementById('rSub');
+  const xishenEl = document.getElementById('xishenRow');
+
+  orderCrystalText = (nameEl?nameEl.textContent:'') + '\n' +
+    (subEl?subEl.textContent:'') + '\n' +
+    '推薦水晶：' + crystals.slice(0,6).join('、');
+
+  document.getElementById('modalCrystalInfo').innerHTML =
+    `<strong>${nameEl?nameEl.textContent:''}</strong><br>${subEl?subEl.textContent:''}<br>` +
+    `推薦水晶：${crystals.slice(0,6).join('、')}`;
+
+  selectedWristSize = '';
+  document.querySelectorAll('.wsz').forEach(x=>x.classList.remove('active'));
+  const ci = document.getElementById('customSize');
+  if(ci) ci.value = '';
+  updateOrderSummary();
+  document.getElementById('orderModal').classList.add('show');
+  document.getElementById('copiedHint').style.display='none';
+}
+
+function closeOrder(){
+  document.getElementById('orderModal').classList.remove('show');
+}
+
+function updateOrderSummary(){
+  const sz = selectedWristSize || '（尚未選擇）';
+  const nameEl = document.getElementById('rName');
+  const subEl = document.getElementById('rSub');
+  document.getElementById('orderSummary').innerHTML =
+    `📋 <strong>訂單內容預覽</strong><br>` +
+    `命盤：${nameEl?nameEl.textContent:''}<br>` +
+    `${subEl?subEl.textContent:''}<br>` +
+    `${document.getElementById('modalCrystalInfo').innerHTML.replace(/<[^>]+>/g,'').replace(/\n/g,'<br>')}<br>` +
+    `手圍尺寸：<strong>${sz}</strong>`;
+}
+
+function copyAndGoIG(){
+  if(!selectedWristSize){
+    alert('請先選擇手圍尺寸 📏');
+    return;
+  }
+  const nameEl = document.getElementById('rName');
+  const subEl = document.getElementById('rSub');
+  const chips = document.querySelectorAll('#overallGrid .cchip');
+  let crystals = [];
+  chips.forEach(c=>{const n=c.textContent.trim().split(' ')[0];if(n)crystals.push(n);});
+  const advChips = document.querySelectorAll('#advResult .cchip');
+  advChips.forEach(c=>{const n=c.textContent.trim().split(' ')[0];if(n&&!crystals.includes(n))crystals.push(n);});
+
+  const msg = `【木沐水晶訂購】\n` +
+    `命盤：${nameEl?nameEl.textContent:''}\n` +
+    `${subEl?subEl.textContent:''}\n` +
+    `推薦水晶：${crystals.slice(0,6).join('、')}\n` +
+    `手圍尺寸：${selectedWristSize}\n` +
+    `（由八字水晶配方網站生成）`;
+
+  navigator.clipboard.writeText(msg).then(()=>{
+    document.getElementById('copiedHint').style.display='block';
+    setTimeout(()=>{
+      window.open('https://www.instagram.com/musan_crystal/', '_blank');
+    }, 800);
+  }).catch(()=>{
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = msg;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    document.getElementById('copiedHint').style.display='block';
+    setTimeout(()=>{
+      window.open('https://www.instagram.com/musan_crystal/', '_blank');
+    }, 800);
+  });
+}
+
+// 點 modal 背景關閉
+document.getElementById('orderModal').addEventListener('click', function(e){
+  if(e.target === this) closeOrder();
+});
+
+initWristGrid();
 initDots();
 initPGrid('pgrid1',id=>{renderAdvResult(id,curAna||{isStrong:true,xishen:['金','水'],jishen:['木','火','土'],dayWX:'丙'});});
 initPGrid('pgrid2',()=>{});
